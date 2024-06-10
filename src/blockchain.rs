@@ -11,7 +11,7 @@ pub struct Blockchain {
 
 pub struct BlockchainIter<'a> {
     current_hash: String,
-    bc: &'a Blockchain
+    bc: &'a Blockchain,
 }
 
 impl Blockchain {
@@ -21,8 +21,8 @@ impl Blockchain {
         match db.get("LAST")? {
             Some(hash) => {
                 let lasthash = String::from_utf8(hash.to_vec())?;
-                Ok( Blockchain {
-                    current_hash:lasthash,
+                Ok(Blockchain {
+                    current_hash: lasthash,
                     db,
                 })
             }
@@ -38,7 +38,6 @@ impl Blockchain {
 
                 bc.db.flush()?;
                 Ok(bc)
-
             }
         }
     }
@@ -46,15 +45,15 @@ impl Blockchain {
     pub fn add_block(&mut self, data: String) -> Result<()> {
         let lsathash = self.db.get("LAST")?.unwrap();
 
-
         let new_block = Block::new_block(data, String::from_utf8(lsathash.to_vec())?, TARGET_HEXT)?;
-        self.db.insert(new_block.get_hash(), bincode::serialize(&new_block)?)?;
+        self.db
+            .insert(new_block.get_hash(), bincode::serialize(&new_block)?)?;
         self.db.insert("LAST", new_block.get_hash().as_bytes())?;
         self.current_hash = new_block.get_hash();
         Ok(())
     }
 
-    pub fn iter(&self) -> BlockchainIter{
+    pub fn iter(&self) -> BlockchainIter {
         BlockchainIter {
             current_hash: self.current_hash.clone(),
             bc: &self,
@@ -62,23 +61,22 @@ impl Blockchain {
     }
 }
 
-
-impl<'a> Iterator for BlockchainIter<'a>  {
+impl<'a> Iterator for BlockchainIter<'a> {
     type Item = Block;
     fn next(&mut self) -> Option<Self::Item> {
         if let Ok(encode_block) = self.bc.db.get(&self.current_hash) {
             return match encode_block {
                 Some(b) => {
-                    if let Ok(block) = bincode::deserialize::<Block>(&b){
+                    if let Ok(block) = bincode::deserialize::<Block>(&b) {
                         self.current_hash = block.get_prev_hash();
                         Some(block)
                     } else {
                         None
                     }
                 }
-                None=> None
-            }
-        } 
+                None => None,
+            };
+        }
         None
     }
 }

@@ -82,7 +82,7 @@ impl Block {
         Ok(&hasher.result_str()[0..TARGET_HEXT] == String::from_utf8(vec1)?)
     }
 
-    pub fn get_prev_hash(&self) -> String{
+    pub fn get_prev_hash(&self) -> String {
         self.prev_block_hash.clone()
     }
 }
@@ -100,9 +100,8 @@ mod tests {
         b.add_block("data2".to_string());
         b.add_block("data6666666666666666666666".to_string());
 
-        for item in b.iter(){
+        for item in b.iter() {
             println!("item {:?}", item)
         }
-
     }
 }
