@@ -7,6 +7,9 @@ use log::info;
 pub type Result<T> = std::result::Result<T, failure::Error>;
 
 const TARGET_HEXT: usize = 4;
+
+
+#[derive(Debug, Clone)]
 pub struct Block {
     timestamp: u128,
     transactions: String,
@@ -16,6 +19,7 @@ pub struct Block {
     nonce:i32
 }
 
+#[derive(Debug)]
 pub struct Blockchain {
     blocks: Vec<Block>
 }
@@ -82,7 +86,7 @@ impl Block {
 
         let mut vec1 = vec![];
         vec1.resize(TARGET_HEXT, '0' as u8);
-        println!("{:?}", vec1);
+       // println!("{:?}", vec1);
 
         Ok(&hasher.result_str()[0..TARGET_HEXT] == String::from_utf8(vec1)?)
     }
@@ -101,4 +105,19 @@ impl Blockchain  {
         self.blocks.push(new_block);
         Ok(())
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_blockchain() {
+        let mut b  = Blockchain::new();
+        b.add_block("data".to_string());
+        b.add_block("data2".to_string());
+        b.add_block("data3".to_string());
+        dbg!(b);
+    }
+
 }
