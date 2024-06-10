@@ -22,6 +22,17 @@ pub struct Blockchain {
 
 
 impl Block {
+
+    pub fn get_hash(&self) -> String {
+        self.hash.clone()
+    }
+
+    // newGenesisBlock
+    pub fn new_genesis_block() -> Block{
+        Block::new_block(String::from("Genesis Block"), String::new(), 0).unwrap()
+    }
+
+
     pub fn new_block(data: String, prev_block_hash: String, height: usize) -> Result<Block> {
         let timestamp = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)?
@@ -78,7 +89,11 @@ impl Block {
 }
 
 impl Blockchain  {
-
+    pub fn new() -> Blockchain {
+        Blockchain {
+            blocks: vec![Block::new_genesis_block()]
+        }
+    }
 
     pub fn add_block(&mut self, data: String) -> Result<()> {
         let prev = self.blocks.last().unwrap();
