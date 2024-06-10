@@ -3,11 +3,12 @@ use std::{time::SystemTime, vec};
 use clap::builder::Str;
 use crypto::{digest::Digest, sha2::Sha256};
 use log::info;
+use serde::{Deserialize, Serialize};
 
 use crate::errors::Result;
 
 const TARGET_HEXT: usize = 4;
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
     timestamp: u128,
     transactions: String,
@@ -76,9 +77,13 @@ impl Block {
 
         let mut vec1 = vec![];
         vec1.resize(TARGET_HEXT, '0' as u8);
-        println!("{:?}", vec1);
+        //println!("{:?}", vec1);
 
         Ok(&hasher.result_str()[0..TARGET_HEXT] == String::from_utf8(vec1)?)
+    }
+
+    pub fn get_prev_hash(&self) -> String{
+        self.prev_block_hash.clone()
     }
 }
 
@@ -90,10 +95,14 @@ mod tests {
 
     #[test]
     fn test_blockchain() {
-        let mut b = Blockchain::new();
+        let mut b = Blockchain::new().unwrap();
         b.add_block("data".to_string());
         b.add_block("data2".to_string());
-        b.add_block("data3".to_string());
-        dbg!(b);
+        b.add_block("data6666666666666666666666".to_string());
+
+        for item in b.iter(){
+            println!("item {:?}", item)
+        }
+
     }
 }
