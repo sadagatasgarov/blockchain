@@ -1,5 +1,6 @@
 use std::{time::SystemTime, vec};
 
+use clap::builder::Str;
 use crypto::{digest::Digest, sha2::Sha256};
 use log::info;
 
@@ -73,8 +74,16 @@ impl Block {
         println!("{:?}", vec1);
 
         Ok(&hasher.result_str()[0..TARGET_HEXT] == String::from_utf8(vec1)?)
-
     }
 }
 
+impl Blockchain  {
 
+
+    pub fn add_block(&mut self, data: String) -> Result<()> {
+        let prev = self.blocks.last().unwrap();
+        let new_block = Block::new_block(data, prev.get_hash(), TARGET_HEXT)?;
+        self.blocks.push(new_block);
+        Ok(())
+    }
+}
