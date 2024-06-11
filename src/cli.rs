@@ -10,7 +10,7 @@ pub struct Cli {
 impl Cli {
     pub fn new() -> Result<Cli> {
         Ok(Cli {
-            bc: Blockchain::new()?,
+            bc: Blockchain::create_blockchain("sl".to_string())?,
         })
     }
 
@@ -41,7 +41,7 @@ impl Cli {
     }
 
     fn add_block(&mut self, data: String) -> Result<()> {
-        self.bc.add_block(data)
+        self.bc.add_block(vec![])
     }
 
     fn print_chain(&mut self) -> Result<()> {
