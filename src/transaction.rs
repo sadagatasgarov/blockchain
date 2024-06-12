@@ -59,7 +59,7 @@ impl Transaction {
             })
         }
 
-        let mut tx = Transaction{
+        let mut tx = Transaction {
             id: String::new(),
             vin,
             vout,
@@ -69,8 +69,6 @@ impl Transaction {
 
         Ok(tx)
     }
-
-
 
     pub fn new_coinbase(to: String, mut data: String) -> Result<Transaction> {
         if data == String::from("") {

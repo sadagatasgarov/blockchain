@@ -7,9 +7,12 @@ yaradilan bloklari gostermek
 
 ```
 cargo run printchain
+
+cargo run create user
+
+cargo run sent user user2 10
+
 ```
-
-
 
 I am using this tutorial
 
