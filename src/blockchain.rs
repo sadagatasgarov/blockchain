@@ -4,7 +4,8 @@ use log::info;
 
 use crate::block::{self, Block};
 use crate::errors::Result;
-use crate::transaction::{TXOutput, Transaction};
+use crate::transaction::Transaction;
+use crate::txs::TXOutput;
 
 const TARGET_HEXT: usize = 4;
 
