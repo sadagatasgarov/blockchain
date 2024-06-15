@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TXInput {
     pub txid: String,
@@ -13,7 +12,6 @@ pub struct TXOutput {
     pub value: i32,
     pub script_pub_key: String,
 }
-
 
 impl TXInput {
     /// CanUnloclOutputWith checks whether the address initiated the transaction

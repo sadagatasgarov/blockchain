@@ -3,6 +3,7 @@ use cli::Cli;
 mod block;
 mod blockchain;
 mod cli;
+mod ed25519;
 mod errors;
 mod transaction;
 mod txs;

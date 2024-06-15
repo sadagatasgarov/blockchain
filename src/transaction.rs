@@ -1,4 +1,8 @@
-use crate::{blockchain::Blockchain, errors::Result, txs::{TXInput, TXOutput}};
+use crate::{
+    blockchain::Blockchain,
+    errors::Result,
+    txs::{TXInput, TXOutput},
+};
 use crypto::{digest::Digest, sha2::Sha256};
 use failure::format_err;
 use log::error;

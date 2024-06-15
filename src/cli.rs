@@ -3,6 +3,7 @@ use std::process::exit;
 use clap::{arg, Command};
 
 use crate::blockchain::Blockchain;
+use crate::ed25519::Wallets;
 use crate::errors::Result;
 use crate::transaction::Transaction;
 
@@ -13,14 +14,13 @@ impl Cli {
         Ok(Cli {})
     }
 
-
-
     pub fn run(&mut self) -> Result<()> {
         let matches = Command::new("blockchain-rust-demo")
             .version("0.1")
             .about("sada.@sa.sa")
-            .subcommand(Command::new("printchain")
-                    .about("print al the chain blocks"))
+            .subcommand(Command::new("printchain").about("print al the chain blocks"))
+            .subcommand(Command::new("createwallet").about("create a wallet"))
+            .subcommand(Command::new("listaddresses").about("list all addresses"))
             .subcommand(
                 Command::new("getbalance")
                     .about("get balance in blockchain")
@@ -40,9 +40,21 @@ impl Cli {
             )
             .get_matches();
 
+        if let Some(_) = matches.subcommand_matches("createwallet") {
+            let mut ws = Wallets::new()?;
+            let address = ws.create_wallet();
+            ws.save_all()?;
+            println!("Success: address {}", address)
+        }
 
-   
-  
+        if let Some(_) = matches.subcommand_matches("listaddresses") {
+            let ws = Wallets::new()?;
+            let addresses = ws.get_all_address();
+            println!("addresses: ");
+            for ad in addresses {
+                println!("{}", ad);
+            }
+        }
 
         if let Some(ref matches) = matches.subcommand_matches("create") {
             if let Some(address) = matches.get_one::<String>("ADDRESS") {
@@ -96,9 +108,7 @@ impl Cli {
             let tx = Transaction::new_utxo(from, to, amount, &bc)?;
             bc.add_block(vec![tx])?;
             println!("success");
-            
         }
-
 
         if let Some(_) = matches.subcommand_matches("printchain") {
             let bc = Blockchain::new()?;
