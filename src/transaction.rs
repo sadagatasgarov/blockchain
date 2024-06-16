@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use crate::{
-    blockchain::Blockchain, ed25519::{Wallet, Wallets}, errors::Result, txs::{TXInput, TXOutput}
+    blockchain::Blockchain,
+    ed25519::{Wallet, Wallets},
+    errors::Result,
+    txs::{TXInput, TXOutput},
 };
 use bincode::serialize;
 use crypto::{digest::Digest, ed25519, ripemd160::Ripemd160, sha2::Sha256};
@@ -21,12 +24,12 @@ impl Transaction {
     /// NewUTXOTransaction creates a new transaction
     pub fn new_utxo(from: &str, to: &str, amount: i32, bc: &Blockchain) -> Result<Transaction> {
         let mut vin = Vec::new();
-        
+
         let wallets = Wallets::new()?;
 
         let wallet = match wallets.get_wallet(from) {
             Some(w) => w,
-            None=>return  Err(format_err!("from wallet not found"))
+            None => return Err(format_err!("from wallet not found")),
         };
 
         if let None = wallets.get_wallet(&to) {
@@ -35,7 +38,6 @@ impl Transaction {
 
         let mut pub_key_hash = wallet.public_key.clone();
         hash_pub_key(&mut pub_key_hash);
-
 
         let acc_v = bc.find_spendable_outputs(&pub_key_hash, amount);
         if acc_v.0 < amount {
@@ -51,28 +53,18 @@ impl Transaction {
                     txid: tx.0.clone(),
                     vout: out,
                     signature: Vec::new(),
-                    pub_key: wallet.public_key.clone()
+                    pub_key: wallet.public_key.clone(),
                 };
                 vin.push(input);
             }
         }
 
-        let mut vout = vec![
-            TXOutput::new(
-                amount,
-                to.to_string()
-            )?
-        ];
+        let mut vout = vec![TXOutput::new(amount, to.to_string())?];
 
         if acc_v.0 > amount {
-            vout.push(
-                TXOutput::new(
-                    acc_v.0 - amount,
-                    from.to_string()
-                )?
-            )
+            vout.push(TXOutput::new(acc_v.0 - amount, from.to_string())?)
         }
-///////////////////////////////////--------------////////////////////////
+        ///////////////////////////////////--------------////////////////////////
         let mut tx = Transaction {
             id: String::new(),
             vin,
@@ -98,14 +90,11 @@ impl Transaction {
                 signature: Vec::new(),
                 pub_key: Vec::from(data.as_bytes()),
             }],
-            vout: vec![
-                TXOutput::new(100, to)?
-            ],
+            vout: vec![TXOutput::new(100, to)?],
         };
         tx.id = tx.hash()?;
         Ok(tx)
     }
-
 
     //// IsCoinbase checks whethet the transaction is coinbase
     pub fn is_coinbase(&self) -> bool {
@@ -113,8 +102,8 @@ impl Transaction {
     }
 
     pub fn verify(&mut self, prev_txs: HashMap<String, Transaction>) -> Result<bool> {
-        if self.is_coinbase(){
-            return  Ok(true);
+        if self.is_coinbase() {
+            return Ok(true);
         }
 
         for vin in &self.vin {
@@ -136,20 +125,19 @@ impl Transaction {
             if !ed25519::verify(
                 &tx_copy.id.as_bytes(),
                 &self.vin[in_id].pub_key,
-                &self.vin[in_id].signature
+                &self.vin[in_id].signature,
             ) {
                 return Ok(false);
             }
         }
 
         Ok(true)
-
     }
 
     pub fn sign(
         &mut self,
         private_key: &[u8],
-        prev_txs: HashMap<String, Transaction>
+        prev_txs: HashMap<String, Transaction>,
     ) -> Result<()> {
         if self.is_coinbase() {
             return Ok(());
@@ -197,7 +185,7 @@ impl Transaction {
         }
 
         for v in &self.vout {
-            vout.push(TXOutput{
+            vout.push(TXOutput {
                 value: v.value,
                 pub_key_hash: v.pub_key_hash.clone(),
             })

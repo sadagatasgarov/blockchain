@@ -52,7 +52,6 @@ impl Wallet {
     }
 }
 
-
 pub struct Wallets {
     wallets: HashMap<String, Wallet>,
 }
@@ -94,7 +93,6 @@ impl Wallets {
     pub fn get_wallet(&self, address: &str) -> Option<&Wallet> {
         self.wallets.get(address)
     }
-
 
     pub fn save_all(&self) -> Result<()> {
         let db = sled::open("data/wallets")?;

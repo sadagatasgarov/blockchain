@@ -7,6 +7,7 @@ mod ed25519;
 mod errors;
 mod transaction;
 mod txs;
+mod utxoset;
 
 fn main() -> Result<()> {
     let mut cli = Cli::new()?;
