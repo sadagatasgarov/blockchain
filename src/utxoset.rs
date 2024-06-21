@@ -46,11 +46,34 @@ impl UTXOSet {
                     if update_outputs.outputs.is_empty() {
                         db.remove(&vin.txid)?;
                     } else {
-                        ///buradan davam edecem 08:09 p8
+                        db.insert(vin.txid.as_bytes(), bincode::serialize(&update_outputs)?)?;
                     }
                 }
             }
+
+            let mut new_outputs = TXOutputs {
+                outputs: Vec::new()
+            };
+
+            for out in &tx.vout {
+                new_outputs.outputs.push(out.clone());
+            }
+
+            db.insert(tx.id.as_bytes(), bincode::serialize(&new_outputs)?)?;
+
         }
         Ok(())
+    }
+
+    /// Count Transaction returns the number of transactions in the UTXO set
+    pub fn count_transaction(&self) -> Result<i32> {
+        let mut counter = 0;
+        let db = sled::open("data/utxos")?;
+        for kv in db.iter() {
+            kv?;
+            counter+=1;
+        }
+
+        Ok(counter)
     }
 }
