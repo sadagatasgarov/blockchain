@@ -40,6 +40,12 @@ impl Blockchain {
     pub fn create_blockchain(address: String) -> Result<Blockchain> {
         info!("Creating new block chain");
 
+        if let Err(e) = std::fs::remove_dir_all("data/blocks") {
+            info!("blocks not exist to delete")
+        }
+
+
+
         let db = sled::open("data/blocks")?;
         info!("Creating new block database");
         const GENESIS_COINBASE_DATA: &str = "ss";
@@ -56,7 +62,7 @@ impl Blockchain {
         Ok(bc)
     }
 
-    pub fn add_block(&mut self, data: Vec<Transaction>) -> Result<()> {
+    pub fn add_block(&mut self, data: Vec<Transaction>) -> Result<Block> {
         let lsathash = self.db.get("LAST")?.unwrap();
 
         let new_block = Block::new_block(data, String::from_utf8(lsathash.to_vec())?, TARGET_HEXT)?;
@@ -64,7 +70,7 @@ impl Blockchain {
             .insert(new_block.get_hash(), bincode::serialize(&new_block)?)?;
         self.db.insert("LAST", new_block.get_hash().as_bytes())?;
         self.current_hash = new_block.get_hash();
-        Ok(())
+        Ok(new_block)
     }
 
     /// FindUnspentTransactions returns a list of transactions containing inspent outputs
@@ -81,7 +87,7 @@ impl Blockchain {
                         }
                     }
 
-                    if tx.vout[index].can_be_unlock_with(address) {
+                    if tx.vout[index].is_locked_with_key(address) {
                         unspend_txs.push(tx.to_owned())
                     }
                 }
@@ -153,19 +159,21 @@ impl Blockchain {
         utxos
     }
 
+
+
     /// FindUnspentTransactions returns a list of transactions containing unspent outputs
     pub fn find_spendable_outputs(
         &self,
         address: &[u8],
         amount: i32,
-    ) -> (i32, HashMap<String, Vec<i32>>) {
+    ) -> Result<(i32, HashMap<String, Vec<i32>>)> {
         let mut unspent_outputs: HashMap<String, Vec<i32>> = HashMap::new();
         let mut accumulated: i32 = 0;
         let unspent_txs = self.find_unspent_transactions(address);
 
         for tx in unspent_txs {
             for index in 0..tx.vout.len() {
-                if tx.vout[index].can_be_unlock_with(address) && accumulated < amount {
+                if tx.vout[index].is_locked_with_key(address) && accumulated < amount {
                     match unspent_outputs.get_mut(&tx.id) {
                         Some(v) => v.push(index as i32),
                         None => {
@@ -175,13 +183,14 @@ impl Blockchain {
                     accumulated += tx.vout[index].value;
 
                     if accumulated >= amount {
-                        return (accumulated, unspent_outputs);
+                        return  Ok((accumulated, unspent_outputs));
                     }
                 }
             }
         }
-        (accumulated, unspent_outputs)
+        Ok((accumulated, unspent_outputs))
     }
+
 
     pub fn iter(&self) -> BlockchainIter {
         BlockchainIter {

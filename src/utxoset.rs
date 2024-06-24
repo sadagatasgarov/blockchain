@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
 use crate::block::Block;
 use crate::blockchain::Blockchain;
 use crate::errors::Result;
 use crate::txs::TXOutputs;
 use bincode::deserialize;
+use log::info;
 
 /// UTXOSet represents UTXO set
 pub struct UTXOSet {
@@ -12,7 +15,12 @@ pub struct UTXOSet {
 impl UTXOSet {
     /// Reindex rebuilds the UTXO set
     pub fn reindex(&self) -> Result<()> {
-        std::fs::remove_dir_all("data/utxos")?;
+
+        if let Err(e) =  std::fs::remove_dir_all("data/utxos") {
+            info!("not exist any utxos to delete")
+        }
+
+
         let db = sled::open("data/utxos")?;
 
         let utxos = self.blockchain.find_utxo();
@@ -52,7 +60,7 @@ impl UTXOSet {
             }
 
             let mut new_outputs = TXOutputs {
-                outputs: Vec::new()
+                outputs: Vec::new(),
             };
 
             for out in &tx.vout {
@@ -60,9 +68,58 @@ impl UTXOSet {
             }
 
             db.insert(tx.id.as_bytes(), bincode::serialize(&new_outputs)?)?;
-
         }
         Ok(())
+    }
+
+    /// FindUnspentTransactions returns a list of transactions containing unspent outputs
+    pub fn find_spendable_outputs(
+        &self,
+        pub_key_hash: &[u8],
+        amount: i32,
+    ) -> Result<(i32, HashMap<String, Vec<i32>>)>{
+        let mut unspent_outputs: HashMap<String, Vec<i32>> = HashMap::new();
+        let mut accumulated: i32 = 0;
+        let db = sled::open("data/utxos")?;
+
+        for kv in db.iter() {
+            let (k, v) = kv?;
+            let txid = String::from_utf8(k.to_vec())?;
+            let outs: TXOutputs = bincode::deserialize(&v.to_vec())?;
+
+            for out_idx in 0..outs.outputs.len() {
+                if outs.outputs[out_idx].is_locked_with_key(pub_key_hash) && accumulated < amount {
+                    accumulated += outs.outputs[out_idx].value;
+                    match unspent_outputs.get_mut(&txid) {
+                        Some(v) => v.push(out_idx as i32),
+                        None => {
+                            unspent_outputs.insert(txid.clone(), vec![out_idx as i32]);
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok((accumulated, unspent_outputs))
+    }
+
+    // FindUTXO finds UTXO for a piblic key hash
+    pub fn find_UTXO(&self, pub_key_hash: &[u8]) -> Result<TXOutputs> {
+        let mut utxos = TXOutputs {
+            outputs: Vec::new(),
+        };
+        let db = sled::open("data/utxos")?;
+
+        for kv in db.iter() {
+            let (_, v) = kv?;
+            let outs: TXOutputs = bincode::deserialize(&v.to_vec())?;
+            for out in outs.outputs {
+                if out.is_locked_with_key(pub_key_hash) {
+                    utxos.outputs.push(out.clone())
+                }
+            }
+        }
+        Ok(utxos)
     }
 
     /// Count Transaction returns the number of transactions in the UTXO set
@@ -71,7 +128,7 @@ impl UTXOSet {
         let db = sled::open("data/utxos")?;
         for kv in db.iter() {
             kv?;
-            counter+=1;
+            counter += 1;
         }
 
         Ok(counter)

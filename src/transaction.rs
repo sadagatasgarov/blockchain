@@ -4,7 +4,7 @@ use crate::{
     blockchain::Blockchain,
     ed25519::{Wallet, Wallets},
     errors::Result,
-    txs::{TXInput, TXOutput},
+    txs::{TXInput, TXOutput}, utxoset::UTXOSet,
 };
 use bincode::serialize;
 use crypto::{digest::Digest, ed25519, ripemd160::Ripemd160, sha2::Sha256};
@@ -22,7 +22,7 @@ pub struct Transaction {
 
 impl Transaction {
     /// NewUTXOTransaction creates a new transaction
-    pub fn new_utxo(from: &str, to: &str, amount: i32, bc: &Blockchain) -> Result<Transaction> {
+    pub fn new_utxo(from: &str, to: &str, amount: i32, bc: &UTXOSet) -> Result<Transaction> {
         let mut vin = Vec::new();
 
         let wallets = Wallets::new()?;
@@ -39,7 +39,7 @@ impl Transaction {
         let mut pub_key_hash = wallet.public_key.clone();
         hash_pub_key(&mut pub_key_hash);
 
-        let acc_v = bc.find_spendable_outputs(&pub_key_hash, amount);
+        let acc_v = bc.find_spendable_outputs(&pub_key_hash, amount)?;
         if acc_v.0 < amount {
             error!("Not Enough balance");
             return Err(format_err!(
@@ -72,7 +72,8 @@ impl Transaction {
         };
 
         tx.id = tx.hash()?;
-        bc.sign_transaction(&mut tx, &wallet.secret_key)?;
+        
+        bc.blockchain.sign_transaction(&mut tx, &wallet.secret_key)?;
 
         Ok(tx)
     }
