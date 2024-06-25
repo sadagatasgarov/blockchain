@@ -24,7 +24,6 @@ impl Cli {
             .subcommand(Command::new("createwallet").about("create a wallet"))
             .subcommand(Command::new("listaddresses").about("list all addresses"))
             .subcommand(Command::new("reindex").about("reindex UTXO"))
-            
             .subcommand(
                 Command::new("getbalance")
                     .about("get balance in blockchain")
@@ -53,7 +52,7 @@ impl Cli {
 
         if let Some(_) = matches.subcommand_matches("reindex") {
             let bc = Blockchain::new()?;
-            let utxo_set  = UTXOSet {blockchain: bc};
+            let utxo_set = UTXOSet { blockchain: bc };
             utxo_set.reindex()?;
             let count = utxo_set.count_transaction()?;
             println!("Done! There are {} transactions in the UTXO set. ", count);
@@ -72,7 +71,7 @@ impl Cli {
             if let Some(address) = matches.get_one::<String>("ADDRESS") {
                 let address = String::from(address);
                 let bc = Blockchain::create_blockchain(address.clone())?;
-                let utxo_set = UTXOSet {blockchain: bc};
+                let utxo_set = UTXOSet { blockchain: bc };
                 utxo_set.reindex()?;
                 println!("create blockchain");
             }

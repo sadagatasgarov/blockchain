@@ -15,11 +15,9 @@ pub struct UTXOSet {
 impl UTXOSet {
     /// Reindex rebuilds the UTXO set
     pub fn reindex(&self) -> Result<()> {
-
-        if let Err(e) =  std::fs::remove_dir_all("data/utxos") {
+        if let Err(e) = std::fs::remove_dir_all("data/utxos") {
             info!("not exist any utxos to delete")
         }
-
 
         let db = sled::open("data/utxos")?;
 
@@ -77,7 +75,7 @@ impl UTXOSet {
         &self,
         pub_key_hash: &[u8],
         amount: i32,
-    ) -> Result<(i32, HashMap<String, Vec<i32>>)>{
+    ) -> Result<(i32, HashMap<String, Vec<i32>>)> {
         let mut unspent_outputs: HashMap<String, Vec<i32>> = HashMap::new();
         let mut accumulated: i32 = 0;
         let db = sled::open("data/utxos")?;

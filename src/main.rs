@@ -14,5 +14,3 @@ fn main() -> Result<()> {
     cli.run()?;
     Ok(())
 }
-
-

@@ -4,7 +4,8 @@ use crate::{
     blockchain::Blockchain,
     ed25519::{Wallet, Wallets},
     errors::Result,
-    txs::{TXInput, TXOutput}, utxoset::UTXOSet,
+    txs::{TXInput, TXOutput},
+    utxoset::UTXOSet,
 };
 use bincode::serialize;
 use crypto::{digest::Digest, ed25519, ripemd160::Ripemd160, sha2::Sha256};
@@ -72,8 +73,9 @@ impl Transaction {
         };
 
         tx.id = tx.hash()?;
-        
-        bc.blockchain.sign_transaction(&mut tx, &wallet.secret_key)?;
+
+        bc.blockchain
+            .sign_transaction(&mut tx, &wallet.secret_key)?;
 
         Ok(tx)
     }
@@ -165,13 +167,14 @@ impl Transaction {
         Ok(())
     }
 
-    fn hash(&mut self) -> Result<String> {
+    pub fn hash(&mut self) -> Result<String> {
         self.id = String::new();
         let data = serialize(self)?;
         let mut hasher = Sha256::new();
         hasher.input(&data[..]);
         Ok(hasher.result_str())
     }
+    
     fn trim_copy(&self) -> Transaction {
         let mut vin = Vec::new();
         let mut vout = Vec::new();

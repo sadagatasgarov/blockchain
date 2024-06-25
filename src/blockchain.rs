@@ -44,8 +44,6 @@ impl Blockchain {
             info!("blocks not exist to delete")
         }
 
-
-
         let db = sled::open("data/blocks")?;
         info!("Creating new block database");
         const GENESIS_COINBASE_DATA: &str = "ss";
@@ -159,8 +157,6 @@ impl Blockchain {
         utxos
     }
 
-
-
     /// FindUnspentTransactions returns a list of transactions containing unspent outputs
     pub fn find_spendable_outputs(
         &self,
@@ -183,14 +179,13 @@ impl Blockchain {
                     accumulated += tx.vout[index].value;
 
                     if accumulated >= amount {
-                        return  Ok((accumulated, unspent_outputs));
+                        return Ok((accumulated, unspent_outputs));
                     }
                 }
             }
         }
         Ok((accumulated, unspent_outputs))
     }
-
 
     pub fn iter(&self) -> BlockchainIter {
         BlockchainIter {

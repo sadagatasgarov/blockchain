@@ -14,6 +14,10 @@ cargo run sent user user2 10
 
 ```
 
-I am using this tutorial
+I am using this tutori
+
+createwallet
+create ***********
+getbalance
 
 https://www.youtube.com/watch?v=qT5YeRZ_DYY&list=PLc0PxFU2AtMQJ0ocblyewzWG60k6vLzLL
