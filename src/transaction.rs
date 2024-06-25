@@ -174,7 +174,7 @@ impl Transaction {
         hasher.input(&data[..]);
         Ok(hasher.result_str())
     }
-    
+
     fn trim_copy(&self) -> Transaction {
         let mut vin = Vec::new();
         let mut vout = Vec::new();
